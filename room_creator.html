@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>A-Frame - Tanakh Museum</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="js/aframe-master.1.0.4.min.js"></script>
+</head>
+
+
+<body>
+
+
+<a-scene>
+
+	<a-assets timeout="10000">
+		<img id="sky" src="images/stars.jpg" />
+		<img id="jlm_ground" src="images/jlm_ground.jpg" />
+		<img id="western_wall" src="images/western_wall.jpg" />
+	</a-assets>
+
+	<a-entity id="room" position = "0 0 0" rotation="0 0 0">
+		<a-entity id="wall0" position="0 0 0"></a-entity>
+		<a-entity id="wall1" position="0 0 0"></a-entity>
+		<a-entity id="wall2" position="0 0 0"></a-entity>
+		<a-entity id="wall3" position="0 0 0"></a-entity>
+	</a-entity>
+
+	<a-sky 
+		rotation = "0 0 0"
+		color = "#FFFFFF"
+		material = "src: #sky">
+	</a-sky>
+	
+	<a-plane
+		width="100" height="100"
+		position=" 0.00 -0.01 0.00" 
+		rotation="-90 0 0" 
+		color="#888888" 
+		material="src: #grid; repeat:100 100; transparent: true; opacity: 0.75">
+	</a-plane>
+
+</a-scene>
+
+<script>
+
+const room = document.getElementById("room");
+
+var wall_height = 4 //meters
+var room_length = 25
+var room_width  = 10
+
+function create_floor() {
+
+	// walls
+	for (i=0;i<4;i++) { 
+
+		// north, south, east, west
+		if (i==0) {
+			var pos   = [0,wall_height/2,-room_width/2]
+			var rot   = [0,0,0]
+			var scale = [room_length,wall_height,0.15]
+		} if (i==1) {
+			var pos   = [0,wall_height/2,room_width/2]
+			var rot   = [0,0,0]
+			var scale = [room_length,wall_height,0.15]
+		} if (i==2) {
+			var pos   = [-room_length/2,wall_height/2,0]
+			var rot   = [0,90,0]
+			var scale = [room_width,wall_height,0.15]
+		} if (i==3) {
+			var pos   = [room_length/2,wall_height/2,0]
+			var rot   = [0,90,0]
+			var scale = [room_width,wall_height,0.15]
+		}
+
+		// outer html
+		var pos = '"'+pos[0]+' '+pos[1]+' '+pos[2]+'"'
+		var rot = '"'+rot[0]+' '+rot[1]+' '+rot[2]+'"'
+		var scale = '"'+scale[0]+' '+scale[1]+' '+scale[2]+'"'
+	 	var elt = '<a-box '+
+								' position='+pos+
+								' rotation='+rot+
+								' scale='+scale+
+								'color="#333333"'+
+								'material="src: #western_wall;">lol'+
+								'</a-box>'
+		room.insertAdjacentHTML('beforeend', elt);
+	}
+
+	// floor
+	var elt = '<a-plane width="'+room_length+'" height="'+room_width+'" rotation="-90 0 0" color="#888888" material="src: #jlm_ground;"></a-plane>'
+	room.insertAdjacentHTML('beforeend', elt);
+
+}
+
+
+create_floor()
+
+</script>
+
+</body>
+</html>
+
+
+
+

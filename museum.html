@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>A-Frame - Tanakh Museum</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="js/aframe-master.1.0.4.min.js"></script>
+	<script src="js/website_links.js"></script>
+</head>
+
+
+<body>
+
+
+<a-scene>
+
+	<a-assets timeout="10000">
+    <a-asset-item id="factory" src="models/hall.gltf"/>
+		<a-asset-item id="room" src="models/museum_test.gltf"/>
+		<a-asset-item id="moses_augustana" src="models/moses_augustana.gltf"/>
+		<!--img id="grid" src="images/border.png" /-->
+		<img id="sky" src="images/stars.jpg" />
+	</a-assets>
+	
+	<a-text id="room_name" value="no value" position="2 3.5 -7.1" width="15" align="center"></a-text>
+	<!--a-text id="txt" value="no value" position="0 2 -2" align="center"></a-text-->	
+
+  <a-entity id="environment">
+    <a-entity id="glbtest" gltf-model="#factory" position="0 0.01 0" rotation="0 0 0" scale="1 1 1" static-body></a-entity>
+    </a-entity>
+  </a-entity>
+
+	<a-entity id="artworks" position = "0 0 0" rotation="0 0 0">
+		<a-entity id="pos1" position="-2 1.5 -7.1"></a-entity>
+		<a-entity id="pos2" position="2 1.5 -7.1"></a-entity>
+		<a-entity id="pos3" position="6 1.5 -7.1"></a-entity>
+		<a-entity id="pos4" position="8.2 1.5 -5.3" rotation="0 -90 0"></a-entity>
+		<a-entity id="pos5" position="8.2 1.5 -2.3" rotation="0 -90 0"></a-entity>
+		<a-entity id="pos6" position="8.2 1.5 1" rotation="0 -90 0"></a-entity>
+	</a-entity>
+
+	<a-entity id="sculptures" position = "0 0 0" rotation="0 0 0">
+		<a-entity gltf-model="#moses_augustana" position="1.7 0 -2.5" scale="0.1 0.1 0.1"></a-entity>
+	</a-entity>
+
+	<a-sky 
+		rotation = "0 0 0"
+		color = "#FFFFFF"
+		material = "src: #sky">
+	</a-sky>
+	
+	<a-plane
+		width="100" height="100"
+		position=" 0.00 0.00 0.00" 
+		rotation="-90 0 0" 
+		color="#888888" 
+		material="src: #grid; repeat:100 100; transparent: true; opacity: 0.75">
+	</a-plane>
+
+</a-scene>
+
+<script>
+
+
+//function place_artwork_holders(wall_positions, 
+
+
+function getInfo(website) {
+
+	var data = [];
+	$.ajax({ url: website, success: function(text) { 
+
+		var artist = $(text).find('#infocel').children()[0].children[0].innerText
+		var lifespan = $(text).find('#infocel').children()[0].innerText
+		var title = $(text).find('#infocel').children()[1].innerText
+		var medium = $(text).find('#infocel').children()[2].innerText
+		var completed = $(text).find('#infocel').children()[2].innerText
+		var museum = $(text).find('.museumlink').text()
+		var bible_link = $(text).find('#infocel').children()[4].innerText
+		var tags = $(text).find('.tags').text()
+		try {
+			var summary = $(text).find('#illudesccontainer').children()[0].innerText + "\n\n" +
+										$(text).find('#illudesccontainer').children()[1].innerText
+		} catch {
+			var summary = 'fix this'
+		}
+	  
+		var imghtml = $(text).find('#bigPic').children().text()
+		var imgsrc_stub = $(imghtml).attr('src')
+		var imgsrc = 'https://www.artbible.info/images/'+imgsrc_stub.substring(7)
+		var imgw = $(imghtml).attr('width')
+		var imgh = $(imghtml).attr('height')
+
+		data = [imgsrc, artist, lifespan, title, medium, completed, museum, summary, bible_link, tags, imgw, imgh]
+		},
+		async:false
+	});	
+	return data;
+}
+
+
+
+
+function addImageFrame(data, i, pos, rot) {
+	const artwork_holder = document.getElementById("artworks").children[i];
+	
+	var imgsrc     = data[0]
+	var artist     = data[1] 
+	var lifespan   = data[2]
+	var title      = data[3]
+	var medium     = data[4]
+	var completed  = data[5]
+	var museum     = data[6]
+	var summary    = data[7]
+	var bible_link = data[8]
+	var tags       = data[9]
+	var imgw       = data[10]
+	var imgh			 = data[11]
+
+	var imgwidth = imgw/imgh //normalize height to 1
+	var imgheight = 1
+	var imghtml = '<a-image src="'+imgsrc+'" width="'+imgwidth+'" height="'+imgheight+'"></a-image>'
+	//
+	var frame_scale = '"'+(imgwidth+0.1)+' '+(imgheight+0.1)+' 0.025"'
+	var img_frame = '<a-box id="box" position="0 0 -0.025" rotation="0 0 0" scale='+frame_scale+' color="#D4AF37"></a-box>'
+
+	// 
+	var blurb_scale = '"'+0.2+' '+0.2+' 0.025"'
+	var blurb_pos = '"'+(imgwidth/2+0.2)+' 0 -0.025"'
+	var blurb_frame = '<a-box id="box" color="#000000"></a-box>'
+	var texthtml = '<a-text value="'+
+					title+'\n'+
+					artist+'\n'+
+					lifespan+'\n'+
+					medium+'\n'+
+					museum+'\n'+
+					bible_link+'\n'+
+					summary+
+				'" position="-.45 0 0.5" width="'+(1)+'" align="left"></a-text>'	
+	var blurb_html = '<a-entity position='+blurb_pos+' rotation="0 0 0" scale='+blurb_scale+'>' +
+											blurb_frame +
+											texthtml
+									 '</a-entity>'
+
+
+	// outer html
+	var pos = '"'+pos[0]+' 0 '+pos[1]+'"'
+	var rot = '"0 0 0"'
+	var scale = '"2 2 2"'
+ 	var elt = '<a-entity '+
+							' position='+pos+
+							' rotation='+rot+
+							' scale='+scale+
+							'>'+img_frame+imghtml+blurb_html
+							'</a-entity>'
+
+	//console.log(elt)
+	artwork_holder.insertAdjacentHTML('beforeend', elt);
+
+}
+
+
+
+function add_artwork(xbook_links, start_idx, num_pieces) {
+	// query websites for data, create image frames in world
+	for (i=0;i<(num_pieces);i++) {
+		data = getInfo('https://www.artbible.info'+xbook_links[start_idx+i])
+		addImageFrame(data, i, [0,0])
+	}
+}
+
+function remove_artwork() {
+	const artworks = document.getElementById("artworks");
+	for (i=0;i<artworks.children.length;i++) {
+		try {
+			artwork_hold = artworks.children[i]
+			artwork_hold.removeChild(artwork_hold.children[0])
+		} catch (err) {
+			console.log('Nothing to remove')
+		}
+	}
+}
+
+function change_room_name(name) {
+	const room_name = document.getElementById("room_name");
+	room_name.setAttribute("value", name)
+}
+
+
+
+
+var cur_book_num = 0
+var cur_idx_in_book = 0
+var num_pieces_per_room = 6
+
+add_artwork(book_links[cur_book_num], cur_idx_in_book, num_pieces_per_room)
+change_room_name(book_names[cur_book_num])
+
+function go_to_next_book() {
+	remove_artwork()
+	cur_book_num++
+	cur_idx_in_book = 0
+	add_artwork(book_links[cur_book_num], cur_idx_in_book, num_pieces_per_room)
+	change_room_name(book_names[cur_book_num])
+}
+
+function go_further_in_book() {
+	remove_artwork()
+	cur_idx_in_book += num_pieces_per_room
+	add_artwork(book_links[cur_book_num], cur_idx_in_book, num_pieces_per_room)
+}
+
+document.onkeypress = function (e) {
+    e = e || window.event;
+    // use e.keyCode
+
+		//const txt = document.getElementById("txt");
+		//txt.setAttribute("value", e.keyCode);
+
+		if (e.keyCode==110) { // 'n'
+			go_to_next_book()
+		} 
+
+		// go further in current book
+		if (e.keyCode==109) { // 'm'
+			go_further_in_book()
+		} 
+
+		if (e.keyCode==113) { // 'q'
+			remove_artwork()
+		}
+};
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
